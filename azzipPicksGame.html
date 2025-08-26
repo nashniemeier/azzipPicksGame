@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Azzip Picks Learning</title>
+  <style>
+    
+    body {
+      background-color: #fcdb04;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    #background {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+      max-width: 1000px;
+      width: 90%;
+      opacity: 0.3;
+    }
+    h1 {
+      font-family: 'Futura', sans-serif;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .category {
+      margin-top: 10px;
+    }
+    .category-label {
+      font-weight: bold;
+      font-size: 18px;
+      margin-top: 15px;
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px;
+    }
+    .topping-button {
+      padding: 10px 15px;
+      font-size: 14px;
+      font-family: 'Futura', sans-serif;
+      cursor: pointer;
+    }
+    #feedback {
+      margin: 10px;
+      font-size: 16px;
+    }
+    #restartBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      display: none;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!--Here is the intro and the base of the project is-->
+
+  <h1>Welcome to Azzip Picks Learning!</h1>
+  <div id="instruction"></div>
+  <div id="feedback"></div>
+  <div id="guessHistory">Previous guesses: </div>
+  <div id="categories"></div>
+  <button id="restartBtn" onclick="startGame()">Play Again</button>
+
+  <script>
+    //Names of pizzas and ingredients
+    const pizzas = [
+      { name: "Westsider", toppings: ["BBQ", "Mozzarella", "Pork", "Onion", "Grippos", "Ski"] },
+      { name: "Triple Double", toppings: ["Ranch", "Garlic", "Pepperoni", "Mozzarella", "Extra Pepperoni", "Red", "Zip Dust"] },
+      { name: "Potato Head", toppings: ["Ranch", "Mozzarella", "Bacon", "Potato", "Cheddar", "Sour Cream"] },
+      { name: "Founder", toppings: ["Red", "Garlic", "Mozzarella", "Pepperoni", "Sausage", "Banana Pepper", "Cheddar", "Buffalo", "Zip Dust"] },
+      { name: "T-Rab", toppings: ["Pesto", "Mozzarella", "Chicken", "Bacon", "Spinach", "Mushroom", "Ranch"] },
+      { name: "Italian Stallion", toppings: ["Red", "Pesto", "Meatball", "Green Pepper", "Onion", "Mushroom", "Banana Pepper", "Mozzarella", "Zip Dust"] },
+      { name: "Sweet Bee", toppings: ["Red", "Mozzarella", "Pepperoni", "Hot Honey", "Zip Dust"] },
+      { name: "Buff Chick", toppings: ["Buffalo", "Chicken", "Banana Pepper", "Mozzarella", "Ranch", "Zip Dust"] },
+      { name: "Classic", toppings: ["Red", "Mozzarella", "Pepperoni", "Sausage", "Onion", "Green Pepper", "Mushroom", "Zip Dust"] },
+      { name: "CBR", toppings: ["Ranch", "Chicken", "Bacon", "Mozzarella", "Zip Dust"] },
+      { name: "Garlic Cheese Sticks", toppings: ["Garlic", "Mozzarella", "Cheddar", "Parmesan", "Zip Dust"]},
+      { name: "Zip Sticks", toppings: ["Garlic", "Pesto", "Parmesan"]}
+
+      //right here you can add monthly's or other pizzas, just copy and paste the format above
+    ];
+
+    const categories = {
+        //all ingredients for pizzas that are on the menu
+        //You can add extra ingredients into here for monthly's or whatever
+      "Sauces": ["BBQ", "Red", "Ranch", "Garlic", "Buffalo", "Pesto"],
+      "Meats": ["Pepperoni", "Extra Pepperoni", "Pork", "Chicken", "Bacon", "Meatball", "Sausage"],
+      "Veggies/Cheese": ["Onion", "Green Pepper", "Mushroom", "Spinach", "Banana Pepper", "Potato", "Mozzarella", "Cheddar", "Parmesan"],
+      "Other Additions": ["Grippos", "Ski", "Sour Cream", "Hot Honey", "Zip Dust"]
+    };
+
+    let currentPizza;
+    let correct = [];
+    let allGuesses = [];
+
+
+    /*This function begins the game, it picks a random pizza 3 lines down from here, and compares the
+    guessed ingredients list to the actual list and will give feedback!
+    */
+    function startGame() {
+      const rand = Math.floor(Math.random() * pizzas.length);
+      currentPizza = pizzas[rand];
+      //Right here is where entries go, into these arrays
+      correct = [];
+      allGuesses = [];
+
+      document.getElementById("instruction").innerText = `Guess the toppings on: ${currentPizza.name}`;
+      document.getElementById("feedback").innerText = "";
+      document.getElementById("guessHistory").innerText = "Previous guesses: ";
+      document.getElementById("restartBtn").style.display = "none";
+
+      renderButtons();
+    }
+
+
+    //Simply makes the buttons exist! Some deep HTML Stuff
+    function renderButtons() {
+      const container = document.getElementById("categories");
+      container.innerHTML = "";
+
+      for (let cat in categories) {
+        const catLabel = document.createElement("div");
+        catLabel.className = "category-label";
+        catLabel.innerText = cat;
+        container.appendChild(catLabel);
+
+        const buttonRow = document.createElement("div");
+        buttonRow.className = "button-container";
+
+        categories[cat].forEach(topping => {
+          const btn = document.createElement("button");
+          btn.innerText = topping;
+          btn.className = "topping-button";
+          btn.onclick = () => handleGuess(btn, topping);
+          buttonRow.appendChild(btn);
+        });
+
+        container.appendChild(buttonRow);
+      }
+    }
+
+    function handleGuess(button, topping) {
+      allGuesses.push(topping);
+      document.getElementById("guessHistory").innerText = `Previous guesses: ${allGuesses.join(", ")}`;
+      button.disabled = true;
+
+      //Here's what checks if the toppings are included
+      if (currentPizza.toppings.includes(topping)) {
+        correct.push(topping);
+        button.style.backgroundColor = "#28a745";
+        button.style.color = "white";
+//A double check as long as the length matches
+        if (correct.length === currentPizza.toppings.length) {
+          document.getElementById("feedback").innerText = `🎉 You built the ${currentPizza.name}!`;
+          disableAllButtons();
+          document.getElementById("restartBtn").style.display = "inline-block";
+        } else {
+          document.getElementById("feedback").innerText = "✅ Correct! Keep going!";
+        }
+      } else {
+        document.getElementById("feedback").innerText = `❌ Nope! That’s not on the ${currentPizza.name}. Remaining were: ${currentPizza.toppings.filter(t => !correct.includes(t)).join(", ")}`;
+        disableAllButtons();
+        document.getElementById("restartBtn").style.display = "inline-block";
+      }
+    }
+
+    function disableAllButtons() {
+      document.querySelectorAll(".topping-button").forEach(btn => btn.disabled = true);
+    }
+
+    startGame();
+  </script>
+
+  
+</body>
+
+<footer>
+    <p>Created by Nash Niemeier</p>
+</footer>
+
+</html>
